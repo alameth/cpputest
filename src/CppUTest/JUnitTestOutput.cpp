@@ -92,7 +92,6 @@ void JUnitTestOutput::resetTestGroupResult()
     JUnitTestCaseResultNode* cur = impl_->results_.head_;
     while (cur) {
         JUnitTestCaseResultNode* tmp = cur->next_;
-        ;
         delete cur->failure_;
         delete cur;
         cur = tmp;
@@ -190,6 +189,17 @@ void JUnitTestOutput::writeProperties()
     writeToFile("</properties>\n");
 }
 
+SimpleString JUnitTestOutput::encodeXmlText(const SimpleString& textbody)
+{
+    SimpleString buf = textbody.asCharString();
+    buf.replace("&", "&amp;");
+    buf.replace("\"", "&quot;");
+    buf.replace("<", "&lt;");
+    buf.replace(">", "&gt;");
+    buf.replace("\n", "{newline}");
+    return buf;
+}
+
 void JUnitTestOutput::writeTestCases()
 {
     JUnitTestCaseResultNode* cur = impl_->results_.head_;
@@ -222,23 +232,21 @@ void JUnitTestOutput::writeTestCases()
 
 void JUnitTestOutput::writeFailure(JUnitTestCaseResultNode* node)
 {
-    SimpleString message = node->failure_->getMessage().asCharString();
-    message.replace('"', '\'');
-    message.replace('<', '[');
-    message.replace('>', ']');
-    message.replace("&", "&amp;");
-    message.replace("\n", "{newline}");
     SimpleString buf = StringFromFormat(
             "<failure message=\"%s:%d: %s\" type=\"AssertionFailedError\">\n",
             node->failure_->getFileName().asCharString(),
-            node->failure_->getFailureLineNumber(), message.asCharString());
+            node->failure_->getFailureLineNumber(),
+            encodeXmlText(node->failure_->getMessage()).asCharString());
     writeToFile(buf.asCharString());
     writeToFile("</failure>\n");
 }
 
+
 void JUnitTestOutput::writeFileEnding()
 {
-    writeToFile("<system-out>"); writeToFile(impl_->stdOutput_); writeToFile("</system-out>\n");
+    writeToFile("<system-out>");
+    writeToFile(encodeXmlText(impl_->stdOutput_));
+    writeToFile("</system-out>\n");
     writeToFile("<system-err></system-err>\n");
     writeToFile("</testsuite>\n");
 }
