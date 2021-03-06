@@ -73,6 +73,9 @@ static void crashMe ()
 
 TEST(GTestSimpleTest, GTestDeathTest)
 {
+#if defined(GTEST_VERSION_GTEST_1_7)
+    CppuTestGTestIgnoreLeaksInTest();
+#endif
     ASSERT_DEATH(crashMe(), "Crash me!");
 }
 
@@ -153,12 +156,12 @@ static void _failMethodEXPECT_STREQ()
 TEST_GROUP(gtestMacros)
 {
     TestTestingFixture* fixture;
-    void setup()
+    void setup() _override
     {
         fixture = new TestTestingFixture();
         afterCheck = false;
     }
-    void teardown()
+    void teardown() _override
     {
         delete fixture;
     }

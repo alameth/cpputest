@@ -50,10 +50,10 @@
   TEST_GROUP_BASE(testGroup, Utest)
 
 #define TEST_SETUP() \
-  virtual void setup()
+  virtual void setup() _override
 
 #define TEST_TEARDOWN() \
-  virtual void teardown()
+  virtual void teardown() _override
 
 #define TEST(testGroup, testName) \
   /* External declarations for strict compilers */ \
@@ -102,10 +102,10 @@
   CHECK_TRUE_LOCATION(condition, "CHECK", #condition, NULLPTR, __FILE__, __LINE__)
 
 #define CHECK_TEXT(condition, text) \
-  CHECK_TRUE_LOCATION(condition, "CHECK", #condition, text, __FILE__, __LINE__)
+  CHECK_TRUE_LOCATION((bool)(condition), "CHECK", #condition, text, __FILE__, __LINE__)
 
 #define CHECK_TRUE(condition)\
-  CHECK_TRUE_LOCATION(condition, "CHECK_TRUE", #condition, NULLPTR, __FILE__, __LINE__)
+  CHECK_TRUE_LOCATION((bool) (condition), "CHECK_TRUE", #condition, NULLPTR, __FILE__, __LINE__)
 
 #define CHECK_TRUE_TEXT(condition, text)\
   CHECK_TRUE_LOCATION(condition, "CHECK_TRUE", #condition, text, __FILE__, __LINE__)
@@ -141,6 +141,10 @@
   { \
     UtestShell::getCurrent()->assertLongsEqual((long)0, (long)0, NULLPTR, file, line); \
   } } while(0)
+
+#define CHECK_EQUAL_ZERO(actual) CHECK_EQUAL(0, (actual))
+
+#define CHECK_EQUAL_ZERO_TEXT(actual, text) CHECK_EQUAL_TEXT(0, (actual), (text))
 
 #define CHECK_COMPARE(first, relop, second)\
   CHECK_COMPARE_TEXT(first, relop, second, NULLPTR)

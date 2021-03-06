@@ -5,6 +5,7 @@ add_library(CppUTest
         TestRegistry.cpp
         CommandLineTestRunner.cpp
         SimpleString.cpp
+        SimpleStringInternalCache.cpp
         TestMemoryAllocator.cpp
         TestResult.cpp
         JUnitTestOutput.cpp
@@ -23,7 +24,7 @@ add_library(CppUTest
 if (CPP_PLATFORM)
     target_sources(CppUTest
         PRIVATE
-            ../Platforms/${CPP_PLATFORM}/UtestPlatform.cpp
+            ${CMAKE_CURRENT_LIST_DIR}/../Platforms/${CPP_PLATFORM}/UtestPlatform.cpp
     )
 endif(CPP_PLATFORM)
 
@@ -43,6 +44,7 @@ set(CppUTest_headers
         ${CppUTestRootDirectory}/include/CppUTest/TestOutput.h
         ${CppUTestRootDirectory}/include/CppUTest/CppUTestConfig.h
         ${CppUTestRootDirectory}/include/CppUTest/SimpleString.h
+        ${CppUTestRootDirectory}/include/CppUTest/SimpleStringInternalCache.h
         ${CppUTestRootDirectory}/include/CppUTest/TestPlugin.h
         ${CppUTestRootDirectory}/include/CppUTest/JUnitTestOutput.h
         ${CppUTestRootDirectory}/include/CppUTest/TeamCityTestOutput.h
@@ -60,7 +62,6 @@ set(CppUTest_headers
         ${CppUTestRootDirectory}/include/CppUTest/MemoryLeakWarningPlugin.h
         ${CppUTestRootDirectory}/include/CppUTest/TestHarness_c.h
         ${CppUTestRootDirectory}/include/CppUTest/UtestMacros.h
-        ${CppUTestRootDirectory}/include/CppUTest/Shuffle.h
         ${CppUTestRootDirectory}/include/CppUTest/SimpleMutex.h
 )
 

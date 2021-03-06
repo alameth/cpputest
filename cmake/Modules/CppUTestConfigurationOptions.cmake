@@ -5,6 +5,14 @@ if (MSVC)
     if(STDC_WANT_SECURE_LIB)
       ADD_DEFINITIONS(-DSTDC_WANT_SECURE_LIB)
     endif(STDC_WANT_SECURE_LIB)
+elseif (IAR)
+    set(CPP_PLATFORM Iar)
+    unset(CMAKE_CXX_EXTENSION_COMPILE_OPTION)
+    set(TESTS_BUILD_DISCOVER OFF)
+    # Set up the CMake variables for the linker
+    set(LINKER_SCRIPT "${CppUTestRootDirectory}/platforms/iar/CppUTestTest.icf")
+    set(CMAKE_C_LINK_FLAGS "--semihosting --config ${LINKER_SCRIPT} --map mapfile.map")
+    set(CMAKE_CXX_LINK_FLAGS "--semihosting --config ${LINKER_SCRIPT} --map mapfile.map")
 elseif (STD_C)
     if(NOT CPP_PLATFORM)
         set(CPP_PLATFORM Gcc)
@@ -31,6 +39,10 @@ if (MEMORY_LEAK_DETECTION)
     if (MSVC)
         set(CPPUTEST_C_FLAGS "${CPPUTEST_C_FLAGS} /FI \"${CppUTestRootDirectory}/include/CppUTest/MemoryLeakDetectorMallocMacros.h\"")
         set(CPPUTEST_CXX_FLAGS "${CPPUTEST_CXX_FLAGS} /FI \"${CppUTestRootDirectory}/include/CppUTest/MemoryLeakDetectorMallocMacros.h\"")
+    elseif (IAR)
+        set(CPPUTEST_C_FLAGS "${CPPUTEST_C_FLAGS} --preinclude \"${CppUTestRootDirectory}/include/CppUTest/MemoryLeakDetectorMallocMacros.h\"")
+        set(CPPUTEST_CXX_FLAGS "${CPPUTEST_CXX_FLAGS} --preinclude \"${CppUTestRootDirectory}/include/CppUTest/MemoryLeakDetectorNewMacros.h\"")
+        set(CPPUTEST_CXX_FLAGS "${CPPUTEST_CXX_FLAGS} --preinclude \"${CppUTestRootDirectory}/include/CppUTest/MemoryLeakDetectorMallocMacros.h\"")
     else (MSVC)
         set(CPPUTEST_C_FLAGS "${CPPUTEST_C_FLAGS} -include \"${CppUTestRootDirectory}/include/CppUTest/MemoryLeakDetectorMallocMacros.h\"")
         set(CPPUTEST_CXX_FLAGS "${CPPUTEST_CXX_FLAGS} -include \"${CppUTestRootDirectory}/include/CppUTest/MemoryLeakDetectorNewMacros.h\"")
@@ -52,12 +64,29 @@ if (COVERAGE AND NOT MSVC)
     set(CPPUTEST_C_FLAGS "${CPPUTEST_C_FLAGS} --coverage")
     set(CPPUTEST_CXX_FLAGS "${CPPUTEST_CXX_FLAGS} --coverage")
     set(CMAKE_BUILD_TYPE "Debug")
-endif (COVERAGE AND NOT MSVC)
+    find_program(GCOVR gcovr DOC "gcovr executable")
 
-if (C++11)
+    if (NOT GCOVR)
+        message(SEND_ERROR "gcovr not found")
+    endif()
+
+    add_custom_target(coverage ${GCOVR}
+        --root ${PROJECT_SOURCE_DIR}
+        --output "${CMAKE_BINARY_DIR}/coverage/coverage.html"
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMENT "Generate coverage data"
+        VERBATIM
+        )
+endif()
+
+if (CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+elseif (C++11)
     find_package(CXX11 REQUIRED)
     set(CPPUTEST_CXX_FLAGS "${CPPUTEST_CXX_FLAGS} ${CXX11_FLAGS}")
-endif (C++11)
+else()
+    # No standard specified
+endif ()
 
 set(GMOCK_HOME $ENV{GMOCK_HOME})
 if (DEFINED ENV{GMOCK_HOME})

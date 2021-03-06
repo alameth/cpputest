@@ -40,16 +40,18 @@ TEST_GROUP(MockPlugin)
 
     MockSupportPlugin plugin;
 
-    void setup()
+    void setup() _override
     {
         test = new UtestShell("group", "name", "file", 1);
         result = new TestResult(output);
     }
 
-    void teardown()
+    void teardown() _override
     {
         delete test;
         delete result;
+        mock().clear();
+        mock().removeAllComparatorsAndCopiers();
     }
 };
 
@@ -90,11 +92,11 @@ TEST(MockPlugin, checkExpectationsWorksAlsoWithHierachicalObjects)
 class DummyComparator : public MockNamedValueComparator
 {
 public:
-    bool isEqual(const void* object1, const void* object2)
+    bool isEqual(const void* object1, const void* object2) _override
     {
         return object1 == object2;
     }
-    SimpleString valueToString(const void*)
+    SimpleString valueToString(const void*) _override
     {
         return "string";
     }
@@ -111,12 +113,14 @@ TEST(MockPlugin, installComparatorRecordsTheComparatorButNotInstallsItYet)
 
     MockNoWayToCompareCustomTypeFailure failure(test, "myType");
     CHECK_EXPECTED_MOCK_FAILURE(failure);
+
+    plugin.clear();
 }
 
 class DummyCopier : public MockNamedValueCopier
 {
 public:
-    void copy(void* dst, const void* src)
+    void copy(void* dst, const void* src) _override
     {
         *(int*)dst = *(const int*)src;
     }
@@ -133,6 +137,8 @@ TEST(MockPlugin, installCopierRecordsTheCopierButNotInstallsItYet)
 
     MockNoWayToCopyCustomTypeFailure failure(test, "myType");
     CHECK_EXPECTED_MOCK_FAILURE(failure);
+
+    plugin.clear();
 }
 
 TEST(MockPlugin, preTestActionWillEnableMultipleComparatorsToTheGlobalMockSupportSpace)
@@ -150,6 +156,8 @@ TEST(MockPlugin, preTestActionWillEnableMultipleComparatorsToTheGlobalMockSuppor
 
     mock().checkExpectations();
     LONGS_EQUAL(0, result->getFailureCount());
+
+    plugin.clear();
 }
 
 static void _failTwiceFunction()
@@ -161,9 +169,8 @@ static void _failTwiceFunction()
 TEST(MockPlugin, shouldNotFailAgainWhenTestAlreadyFailed)
 {
     TestTestingFixture fixture;
-    fixture.registry_->installPlugin(&plugin);
+    fixture.installPlugin(&plugin);
     fixture.setTestFunction(_failTwiceFunction);
     fixture.runAllTests();
     fixture.assertPrintContains("1 failures, 1 tests, 1 ran, 2 checks,");
 }
-

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Michael Feathers, James Grenning and Bas Vodde
+ * Copyright (c) 2011, Michael Feathers, James Grenning and Bas Vodde
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,21 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CppUTest/CommandLineTestRunner.h"
+#ifndef GTESTSUPPORT__H_
+#define GTESTSUPPORT__H_
 
+extern void CppuTestGTestIgnoreLeaksInTest();
 
-int main(int ac, const char** av)
-{
-    /* These checks are here to make sure assertions outside test runs don't crash */
-    CHECK(true);
-    LONGS_EQUAL(1, 1);
-    const char * av_override[] = {"exe", "-v"};
-    
-    int rv = CommandLineTestRunner::RunAllTests(2, av_override);
-    
-    //Exiting from main causes IAR simulator to issue out-of-bounds memory access warnings.
-    volatile int wait = 1;
-    while (wait){}
-    return rv;
-}
-
+#endif
